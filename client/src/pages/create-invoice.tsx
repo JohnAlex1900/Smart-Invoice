@@ -155,8 +155,8 @@ export default function CreateInvoice() {
       taxRate: formData.taxRate,
       taxAmount: taxAmount.toFixed(2),
       total: total.toFixed(2),
-      invoiceDate: new Date(formData.invoiceDate),
-      dueDate: new Date(formData.dueDate),
+      invoiceDate: formData.invoiceDate, // Send as string, let server handle conversion
+      dueDate: formData.dueDate, // Send as string, let server handle conversion
       items: items.map(item => ({
         description: item.description,
         quantity: item.quantity.toFixed(2),
@@ -165,6 +165,7 @@ export default function CreateInvoice() {
       })),
     };
 
+    console.log("Sending invoice data:", invoiceData);
     createInvoiceMutation.mutate(invoiceData);
   };
 

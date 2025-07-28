@@ -135,6 +135,7 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
 export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({
   id: true,
   createdAt: true,
+  invoiceId: true, // This will be added server-side
 }).extend({
   quantity: z.union([z.string(), z.number()]).transform((val) => 
     typeof val === 'string' ? val : val.toString()

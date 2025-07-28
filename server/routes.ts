@@ -129,6 +129,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { items, ...invoiceData } = req.body;
       
+      console.log("Invoice data received:", invoiceData);
+      console.log("Items received:", items);
+      
       const invoice = insertInvoiceSchema.parse({
         ...invoiceData,
         userId: req.user.id,
@@ -139,6 +142,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const createdInvoice = await storage.createInvoice(invoice, invoiceItems);
       res.json(createdInvoice);
     } catch (error: any) {
+      console.error("Invoice validation error:", error);
+      if (error.issues) {
+        console.error("Validation issues:", JSON.stringify(error.issues, null, 2));
+      }
       res.status(400).json({ message: error.message });
     }
   });
