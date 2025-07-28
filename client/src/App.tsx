@@ -40,7 +40,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 }
 
 function PublicRoute({ component: Component }: { component: React.ComponentType }) {
-  const { firebaseUser, loading } = useAuth();
+  const { firebaseUser, user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -50,7 +50,7 @@ function PublicRoute({ component: Component }: { component: React.ComponentType 
     );
   }
 
-  if (firebaseUser) {
+  if (firebaseUser && user) {
     return <Redirect to="/dashboard" />;
   }
 
