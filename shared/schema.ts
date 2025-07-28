@@ -108,11 +108,31 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  invoiceDate: z.union([z.string(), z.date()]).transform((val) => 
+    typeof val === 'string' ? new Date(val) : val
+  ),
+  dueDate: z.union([z.string(), z.date()]).transform((val) => 
+    typeof val === 'string' ? new Date(val) : val
+  ),
+  paidAt: z.union([z.string(), z.date(), z.null()]).transform((val) => 
+    val === null ? null : (typeof val === 'string' ? new Date(val) : val)
+  ).optional(),
 });
 
 export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({
   id: true,
   createdAt: true,
+}).extend({
+  quantity: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? parseFloat(val) : val
+  ),
+  rate: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? parseFloat(val) : val
+  ),
+  amount: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? parseFloat(val) : val
+  ),
 });
 
 // Types

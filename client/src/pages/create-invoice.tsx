@@ -151,16 +151,17 @@ export default function CreateInvoice() {
     const invoiceData = {
       ...formData,
       invoiceNumber: generateInvoiceNumber(),
-      subtotal: subtotal.toString(),
-      taxAmount: taxAmount.toString(),
-      total: total.toString(),
-      invoiceDate: new Date(formData.invoiceDate).toISOString(),
-      dueDate: new Date(formData.dueDate).toISOString(),
+      subtotal: subtotal.toFixed(2),
+      taxRate: formData.taxRate,
+      taxAmount: taxAmount.toFixed(2),
+      total: total.toFixed(2),
+      invoiceDate: new Date(formData.invoiceDate),
+      dueDate: new Date(formData.dueDate),
       items: items.map(item => ({
         description: item.description,
-        quantity: item.quantity.toString(),
-        rate: item.rate.toString(),
-        amount: item.amount.toString(),
+        quantity: item.quantity.toFixed(2),
+        rate: item.rate.toFixed(2),
+        amount: item.amount.toFixed(2),
       })),
     };
 
