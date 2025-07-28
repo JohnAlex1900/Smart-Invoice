@@ -118,6 +118,18 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   paidAt: z.union([z.string(), z.date(), z.null()]).transform((val) => 
     val === null ? null : (typeof val === 'string' ? new Date(val) : val)
   ).optional(),
+  subtotal: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? val : val.toString()
+  ),
+  taxRate: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? val : val.toString()
+  ),
+  taxAmount: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? val : val.toString()
+  ),
+  total: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? val : val.toString()
+  ),
 });
 
 export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({
@@ -125,13 +137,13 @@ export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({
   createdAt: true,
 }).extend({
   quantity: z.union([z.string(), z.number()]).transform((val) => 
-    typeof val === 'string' ? parseFloat(val) : val
+    typeof val === 'string' ? val : val.toString()
   ),
   rate: z.union([z.string(), z.number()]).transform((val) => 
-    typeof val === 'string' ? parseFloat(val) : val
+    typeof val === 'string' ? val : val.toString()
   ),
   amount: z.union([z.string(), z.number()]).transform((val) => 
-    typeof val === 'string' ? parseFloat(val) : val
+    typeof val === 'string' ? val : val.toString()
   ),
 });
 

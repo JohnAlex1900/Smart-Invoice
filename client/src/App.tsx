@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import AuthPage from "@/pages/auth";
+import LandingPage from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Invoices from "@/pages/invoices";
 import CreateInvoice from "@/pages/create-invoice";
@@ -38,11 +39,32 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   );
 }
 
+function PublicRoute({ component: Component }: { component: React.ComponentType }) {
+  const { firebaseUser, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (firebaseUser) {
+    return <Redirect to="/dashboard" />;
+  }
+
+  return <Component />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/auth" component={AuthPage} />
-      <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
+      <Route path="/" component={() => <PublicRoute component={LandingPage} />} />
+      <Route path="/auth" component={() => <PublicRoute component={AuthPage} />} />
+      <Route path="/login" component={() => <PublicRoute component={AuthPage} />} />
+      <Route path="/register" component={() => <PublicRoute component={AuthPage} />} />
+      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/invoices" component={() => <ProtectedRoute component={Invoices} />} />
       <Route path="/invoices/create" component={() => <ProtectedRoute component={CreateInvoice} />} />
       <Route path="/clients" component={() => <ProtectedRoute component={Clients} />} />

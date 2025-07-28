@@ -1,0 +1,99 @@
+Now add a professional, public-facing landing page with the following instructions:
+
+🏠 Landing Page Requirements:
+Purpose: Introduce the invoicing platform, present the problem, showcase the solution, and attract SME owners to sign up.
+
+📌 Key Sections (scrolling layout):
+Hero Section
+
+Headline: “Simplify Your Business Invoicing with One Click”
+
+Subheadline: “A cloud-based invoicing solution tailored for Small and Medium Enterprises.”
+
+CTA Buttons:
+
+"Get Started" → links to /register
+
+"Learn More" → scrolls to Features section
+
+Problem Section
+
+Title: “Why SMEs Struggle with Invoicing”
+
+Bullet points or icons explaining:
+
+Manual errors in Excel or paper invoicing
+
+Time wasted chasing payments
+
+Confusing or expensive tools
+
+Optional: Small infographic or stat highlights (e.g., “35% SME invoicing fails due to poor tools”)
+
+Solution Section
+
+Title: “Our Solution: Cloud-Based Simplicity”
+
+Bullet list or 3-column layout:
+
+Invoice generation in seconds
+
+Secure cloud access 24/7
+
+Payment and client tracking
+
+Mobile-friendly design (optional)
+
+Free forever plan (if applicable)
+
+Benefits for SMEs
+
+Testimonials layout or icons:
+
+“Save 10+ hours/week”
+
+“Track client payments from anywhere”
+
+“Look professional with branded invoices”
+
+Call-to-Action Footer
+
+CTA: “Start Your Free Account Today”
+
+Button: “Create an Account” → /register
+
+🎨 Design Guidelines:
+Keep light theme, modern UI (soft blue, gray, white tones)
+
+Use Tailwind CSS cards, shadows, rounded corners
+
+Mobile responsiveness is optional but recommended
+
+Match the style of the internal dashboard
+
+Keep navigation bar with:
+
+Logo placeholder
+
+Nav links: Home | Features | Login | Register
+
+🔒 Access Restriction Logic:
+Implement route protection so that:
+
+Only logged-in users can access /dashboard, /invoices, /clients, /settings
+
+All unauthenticated users are redirected to /login if they try to access protected routes
+
+📌 Routing Behavior:
+/ → Public Landing Page
+
+/login → Login form (existing)
+
+/register → Register form (existing)
+
+/dashboard, /invoices, /clients, etc. → Accessible only after login
+
+Use React Router and context/Auth hooks or JWT middleware to manage this
+
+End Result:
+The landing page should feel like the entry point of a real SaaS platform for SMEs, with clear messaging, visual polish, and seamless transition to signup. It must complement the already existing app features and maintain full functionality.
