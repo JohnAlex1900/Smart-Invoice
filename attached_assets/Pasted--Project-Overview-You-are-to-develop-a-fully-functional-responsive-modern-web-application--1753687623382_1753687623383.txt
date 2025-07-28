@@ -1,0 +1,127 @@
+**Project Overview**:
+You are to develop a **fully functional, responsive, modern web application** for **cloud-based invoicing tailored to SMEs (Small and Medium Enterprises)**. The goal is to allow SME business owners to easily **create, manage, and track invoices** for their clients. The application must be clean, intuitive, and simple enough for non-tech-savvy users, while ensuring basic security, efficiency, and usability.
+
+
+### 🔷 🔩 Functional Scope:
+
+#### 🔐 Authentication:
+
+* User registration (SME account)
+* Secure login (with hashed passwords)
+* Password recovery (optional)
+* Session management (JWT or secure cookies)
+
+#### 📊 Dashboard:
+
+* Overview metrics: total invoices, pending payments, clients
+* Recent activity summary
+* Sidebar navigation (Dashboard, Invoices, Clients, Settings)
+
+#### 🧾 Invoices:
+
+* Create Invoice page:
+
+  * Client selection/add new
+  * Itemized invoice (items, qty, price, total)
+  * Invoice date & due date
+  * Tax and notes
+  * Auto-total calculation
+* Invoice list:
+
+  * Table view with search and filter (paid, pending, overdue)
+  * Actions: view, edit, delete
+* Invoice details page:
+
+  * Download as PDF
+  * Print
+  * Mark as paid
+* Currency selection (default to KES/USD)
+
+#### 👤 Client Management:
+
+* Add/edit/delete client
+* Client list table with contact info and invoice count
+
+
+#### ⚙️ Settings:
+
+* Edit profile (business name, email, password)
+* Change password
+* Logout
+
+### 🎨 UI Design Requirements:
+
+* **Light theme**
+* **Modern UI** (like Stripe, Zoho, or Notion style)
+* Smooth transitions, responsive layout (desktop-first now)
+* Primary Color: Blue or teal
+* Secondary: Soft gray and white cards with shadows
+* Rounded corners, cards, iconography (Lucide/Feather icons)
+
+### 🛠 Tech Stack:
+
+#### Frontend:
+
+* **React JS** (Vite)
+* **Tailwind CSS** (for fast UI styling)
+* React Router for page navigation
+* Axios or Fetch for API requests
+* React Hook Form (for validation)
+
+#### Backend:
+
+* **Node.js** with **Express**
+* RESTful API architecture
+* Authentication using Firebase
+* Input validation using Joi or Express-Validator
+* **Firebase**
+
+  * If relational data required (PostgreSQL), use Sequelize or Knex.js
+* Controllers for: Auth, Invoices, Clients, Users
+
+#### Others:
+
+* GitHub for version control
+* Dotenv for environment configs
+* Deployment-ready (suggest Vercel for frontend, Render or Railway for backend API + DB)
+
+
+### ✅ Project Structure Suggestion:
+
+```
+client/
+ ├── src/
+ │   ├── components/
+ │   ├── pages/
+ │   ├── utils/
+ │   └── App.jsx
+server/
+ ├── controllers/
+ ├── routes/
+ ├── models/
+ ├── middleware/
+ ├── server.js
+```
+
+### 📦 Extra Functional Considerations:
+
+* Invoice IDs should be auto-generated and unique
+* Use date formatting (e.g., Moment.js or native) for invoices
+* All forms should have client-side and server-side validation
+* Security:
+
+  * Sanitize all inputs
+  * Use HTTPS if hosted
+  * Hash passwords with bcrypt
+* Provide demo/test credentials if applicable
+
+### 🧪 Testing (Optional if time allows):
+
+* Functional testing with unit tests (Jest or Mocha)
+* Usability testing with dummy accounts and invoices
+
+**End Goal**: A fully working MVP cloud-based invoicing web app for SMEs with:
+
+* Clean design
+* Functional backend & database
+* Usable features tested in-browser
