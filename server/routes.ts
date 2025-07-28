@@ -132,14 +132,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Invoice data received:", invoiceData);
       console.log("Items received:", items);
       
+      // Validate invoice data
       const invoice = insertInvoiceSchema.parse({
         ...invoiceData,
         userId: req.user.id,
       });
 
-      const invoiceItems = z.array(insertInvoiceItemSchema).parse(items || []);
+      // Validate items without invoiceId (will be added in storage layer)
+      const validatedItems = items?.map((item: any) => {
+        return insertInvoiceItemSchema.parse(item);
+      }) || [];
 
-      const createdInvoice = await storage.createInvoice(invoice, invoiceItems);
+      const createdInvoice = await storage.createInvoice(invoice, validatedItems);
       res.json(createdInvoice);
     } catch (error: any) {
       console.error("Invoice validation error:", error);
