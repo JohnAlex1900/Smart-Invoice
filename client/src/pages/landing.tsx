@@ -1,13 +1,20 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Clock, Shield, Smartphone, TrendingUp, Users } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Shield,
+  Smartphone,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
 
   const scrollToFeatures = () => {
-    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -18,20 +25,17 @@ export default function LandingPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="bg-teal-600 text-white px-3 py-2 rounded-lg font-bold text-lg">
-                InvoicePro
+                SmartInvoice
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <button 
+              <button
                 onClick={scrollToFeatures}
                 className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium"
               >
                 Features
               </button>
-              <Button
-                variant="ghost"
-                onClick={() => setLocation("/auth")}
-              >
+              <Button variant="ghost" onClick={() => setLocation("/auth")}>
                 Login
               </Button>
               <Button
@@ -52,8 +56,9 @@ export default function LandingPage() {
             Simplify Your Business Invoicing with One Click
           </h1>
           <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto">
-            A cloud-based invoicing solution tailored for Small and Medium Enterprises. 
-            Create professional invoices, track payments, and manage clients effortlessly.
+            A cloud-based invoicing solution tailored for Small and Medium
+            Enterprises. Create professional invoices, track payments, and
+            manage clients effortlessly.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -83,7 +88,8 @@ export default function LandingPage() {
               Why SMEs Struggle with Invoicing
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Traditional invoicing methods create unnecessary friction and waste valuable time
+              Traditional invoicing methods create unnecessary friction and
+              waste valuable time
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -92,9 +98,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Clock className="w-6 h-6 text-red-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Manual Errors</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Manual Errors
+                </h3>
                 <p className="text-slate-600">
-                  Excel and paper invoicing leads to calculation mistakes and formatting inconsistencies
+                  Excel and paper invoicing leads to calculation mistakes and
+                  formatting inconsistencies
                 </p>
               </CardContent>
             </Card>
@@ -103,9 +112,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <TrendingUp className="w-6 h-6 text-red-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Time Wasted</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Time Wasted
+                </h3>
                 <p className="text-slate-600">
-                  Chasing payments and managing client communications takes hours each week
+                  Chasing payments and managing client communications takes
+                  hours each week
                 </p>
               </CardContent>
             </Card>
@@ -114,16 +126,21 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="w-6 h-6 text-red-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Complex Tools</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Complex Tools
+                </h3>
                 <p className="text-slate-600">
-                  Existing solutions are either too expensive or too complicated for small businesses
+                  Existing solutions are either too expensive or too complicated
+                  for small businesses
                 </p>
               </CardContent>
             </Card>
           </div>
           <div className="text-center mt-12">
             <div className="inline-flex items-center bg-red-50 text-red-700 px-6 py-3 rounded-full">
-              <span className="font-semibold text-lg">35% of SME invoicing fails due to poor tools</span>
+              <span className="font-semibold text-lg">
+                35% of SME invoicing fails due to poor tools
+              </span>
             </div>
           </div>
         </div>
@@ -137,7 +154,8 @@ export default function LandingPage() {
               Our Solution: Cloud-Based Simplicity
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Everything you need to manage invoices professionally, without the complexity
+              Everything you need to manage invoices professionally, without the
+              complexity
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -146,9 +164,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Clock className="w-6 h-6 text-teal-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Invoice Generation in Seconds</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Invoice Generation in Seconds
+                </h3>
                 <p className="text-slate-600">
-                  Create professional invoices with just a few clicks using our intuitive interface
+                  Create professional invoices with just a few clicks using our
+                  intuitive interface
                 </p>
               </CardContent>
             </Card>
@@ -157,9 +178,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-6 h-6 text-teal-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Secure Cloud Access 24/7</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Secure Cloud Access 24/7
+                </h3>
                 <p className="text-slate-600">
-                  Access your invoices and client data securely from anywhere, anytime
+                  Access your invoices and client data securely from anywhere,
+                  anytime
                 </p>
               </CardContent>
             </Card>
@@ -168,9 +192,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <TrendingUp className="w-6 h-6 text-teal-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Payment & Client Tracking</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Payment & Client Tracking
+                </h3>
                 <p className="text-slate-600">
-                  Monitor payment status and manage client relationships in one central dashboard
+                  Monitor payment status and manage client relationships in one
+                  central dashboard
                 </p>
               </CardContent>
             </Card>
@@ -181,9 +208,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Smartphone className="w-6 h-6 text-teal-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Mobile-Friendly Design</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Mobile-Friendly Design
+                </h3>
                 <p className="text-slate-600">
-                  Work on the go with our responsive design that works perfectly on any device
+                  Work on the go with our responsive design that works perfectly
+                  on any device
                 </p>
               </CardContent>
             </Card>
@@ -192,9 +222,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-6 h-6 text-teal-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Free Forever Plan</h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Free Forever Plan
+                </h3>
                 <p className="text-slate-600">
-                  Start with our completely free plan - no credit card required, no hidden fees
+                  Start with our completely free plan - no credit card required,
+                  no hidden fees
                 </p>
               </CardContent>
             </Card>
@@ -220,7 +253,8 @@ export default function LandingPage() {
                 <div className="text-lg">Hours Saved Weekly</div>
               </div>
               <p className="text-slate-600">
-                "InvoicePro reduced my invoicing time from hours to minutes. I can focus on growing my business instead of paperwork."
+                "InvoicePro reduced my invoicing time from hours to minutes. I
+                can focus on growing my business instead of paperwork."
               </p>
             </div>
             <div className="text-center">
@@ -229,7 +263,8 @@ export default function LandingPage() {
                 <div className="text-lg">Access Anywhere</div>
               </div>
               <p className="text-slate-600">
-                "Whether I'm at the office or traveling, I can track client payments and send invoices instantly from any device."
+                "Whether I'm at the office or traveling, I can track client
+                payments and send invoices instantly from any device."
               </p>
             </div>
             <div className="text-center">
@@ -238,7 +273,8 @@ export default function LandingPage() {
                 <div className="text-lg">Professional Look</div>
               </div>
               <p className="text-slate-600">
-                "My invoices look so much more professional now. Clients take my business more seriously and pay faster."
+                "My invoices look so much more professional now. Clients take my
+                business more seriously and pay faster."
               </p>
             </div>
           </div>
@@ -252,7 +288,7 @@ export default function LandingPage() {
             Start Your Free Account Today
           </h2>
           <p className="text-xl mb-10 opacity-90">
-            Join thousands of SMEs who have simplified their invoicing process. 
+            Join thousands of SMEs who have simplified their invoicing process.
             No credit card required, no setup fees, no contracts.
           </p>
           <Button
@@ -263,7 +299,8 @@ export default function LandingPage() {
             Create Your Account
           </Button>
           <div className="mt-8 text-sm opacity-75">
-            ✓ Free forever plan available  ✓ No credit card required  ✓ Set up in under 2 minutes
+            ✓ Free forever plan available ✓ No credit card required ✓ Set up in
+            under 2 minutes
           </div>
         </div>
       </section>
@@ -276,22 +313,24 @@ export default function LandingPage() {
               <div className="bg-teal-600 text-white px-3 py-2 rounded-lg font-bold text-lg inline-block">
                 InvoicePro
               </div>
-              <p className="text-slate-400 mt-2">Simplifying invoicing for SMEs worldwide</p>
+              <p className="text-slate-400 mt-2">
+                Simplifying invoicing for SMEs worldwide
+              </p>
             </div>
             <div className="flex space-x-6">
-              <button 
+              <button
                 onClick={scrollToFeatures}
                 className="text-slate-400 hover:text-white"
               >
                 Features
               </button>
-              <button 
+              <button
                 onClick={() => setLocation("/auth")}
                 className="text-slate-400 hover:text-white"
               >
                 Login
               </button>
-              <button 
+              <button
                 onClick={() => setLocation("/auth")}
                 className="text-slate-400 hover:text-white"
               >

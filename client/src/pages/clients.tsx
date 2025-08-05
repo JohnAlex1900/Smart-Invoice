@@ -4,18 +4,17 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import ClientForm from "@/components/client/client-form";
-import { 
-  UserPlus, 
-  Search, 
-  Building, 
-  Edit, 
-  Trash2,
-  Users
-} from "lucide-react";
+import { UserPlus, Search, Building, Edit, Trash2, Users } from "lucide-react";
 
 export default function Clients() {
   const { toast } = useToast();
@@ -27,10 +26,9 @@ export default function Clients() {
   const { data: clients, isLoading } = useQuery({
     queryKey: ["/api/clients"],
     queryFn: async () => {
-      const response = await fetch("/api/clients", {
-        headers: getAuthHeaders(),
-      });
-      if (!response.ok) throw new Error("Failed to fetch clients");
+      const headers = await getAuthHeaders();
+      const response = await fetch("/api/clients", { headers });
+      if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
   });
@@ -56,7 +54,11 @@ export default function Clients() {
   });
 
   const handleDeleteClient = (clientId: string) => {
-    if (window.confirm("Are you sure you want to delete this client? This will also delete all associated invoices.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this client? This will also delete all associated invoices."
+      )
+    ) {
       deleteClientMutation.mutate(clientId);
     }
   };
@@ -71,10 +73,12 @@ export default function Clients() {
     setEditingClient(null);
   };
 
-  const filteredClients = clients?.filter((client: any) =>
-    client.name.toLowerCase().includes(search.toLowerCase()) ||
-    client.email.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  const filteredClients =
+    clients?.filter(
+      (client: any) =>
+        client.name.toLowerCase().includes(search.toLowerCase()) ||
+        client.email.toLowerCase().includes(search.toLowerCase())
+    ) || [];
 
   const formatCurrency = (amount: string) => {
     const num = parseFloat(amount);
@@ -105,7 +109,9 @@ export default function Clients() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Clients</h1>
-          <p className="text-slate-600 mt-2">Manage your client relationships</p>
+          <p className="text-slate-600 mt-2">
+            Manage your client relationships
+          </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -120,10 +126,7 @@ export default function Clients() {
                 {editingClient ? "Edit Client" : "Add New Client"}
               </DialogTitle>
             </DialogHeader>
-            <ClientForm
-              client={editingClient}
-              onSuccess={handleCloseDialog}
-            />
+            <ClientForm client={editingClient} onSuccess={handleCloseDialog} />
           </DialogContent>
         </Dialog>
       </div>
@@ -152,8 +155,8 @@ export default function Clients() {
               {search ? "No clients found" : "No clients yet"}
             </h3>
             <p className="text-slate-500 mb-6">
-              {search 
-                ? "Try adjusting your search terms" 
+              {search
+                ? "Try adjusting your search terms"
                 : "Get started by adding your first client"}
             </p>
             {!search && (
@@ -194,17 +197,25 @@ export default function Clients() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{client.name}</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    {client.name}
+                  </h3>
                   <p className="text-slate-600 mb-1">{client.email}</p>
                   {client.phone && (
                     <p className="text-slate-600 mb-4">{client.phone}</p>
                   )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-500">
-                      Invoices: <span className="font-medium text-slate-900">{client.invoiceCount}</span>
+                      Invoices:{" "}
+                      <span className="font-medium text-slate-900">
+                        {client.invoiceCount}
+                      </span>
                     </span>
                     <span className="text-slate-500">
-                      Total: <span className="font-medium text-slate-900">{formatCurrency(client.totalAmount)}</span>
+                      Total:{" "}
+                      <span className="font-medium text-slate-900">
+                        {formatCurrency(client.totalAmount)}
+                      </span>
                     </span>
                   </div>
                 </div>

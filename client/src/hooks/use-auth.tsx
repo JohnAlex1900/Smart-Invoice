@@ -8,7 +8,7 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   user: User | null;
   loading: boolean;
-  getAuthHeaders: () => Record<string, string>;
+  getAuthHeaders: () => Promise<Record<string, string>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,23 +18,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const getAuthHeaders = (): Record<string, string> => {
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
     if (!firebaseUser) return {};
+    const token = await firebaseUser.getIdToken();
     return {
-      'x-firebase-uid': firebaseUser.uid,
+      Authorization: `Bearer ${token}`,
     };
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (firebaseUser) => {
       setFirebaseUser(firebaseUser);
-      
+
       if (firebaseUser) {
         try {
           // Get or create user in our database
           const response = await fetch("/api/users/me", {
             headers: {
-              'x-firebase-uid': firebaseUser.uid,
+              Authorization: `Bearer ${await firebaseUser.getIdToken()}`,
             },
           });
 
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(null);
       }
-      
+
       setLoading(false);
     });
 
@@ -60,7 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ firebaseUser, user, loading, getAuthHeaders }}>
+    <AuthContext.Provider
+      value={{ firebaseUser, user, loading, getAuthHeaders }}
+    >
       {children}
     </AuthContext.Provider>
   );

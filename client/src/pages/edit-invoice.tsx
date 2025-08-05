@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,66 +17,94 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import type { InvoiceWithDetails } from "@shared/schema";
+import { InvoiceItem as SharedInvoiceItem } from "@shared/schema";
 
-interface InvoiceItem {
-  description: string;
+interface InvoiceItem
+  extends Omit<SharedInvoiceItem, "quantity" | "rate" | "amount"> {
   quantity: number;
   rate: number;
   amount: number;
 }
 
-export default function CreateInvoice() {
+interface Client {
+  id: string;
+  name: string;
+}
+
+export default function EditInvoice() {
   const [, setLocation] = useLocation();
+  const { invoiceId } = useParams();
   const { toast } = useToast();
   const { getAuthHeaders, user } = useAuth();
 
   const [formData, setFormData] = useState({
     clientId: "",
-    currency: user?.defaultCurrency || "USD",
-    invoiceDate: new Date().toISOString().split("T")[0],
+    currency: "USD",
+    invoiceDate: new Date().toISOString().split("T")[0] || "",
     dueDate: "",
-    taxRate: user?.defaultTaxRate || "0",
+    taxRate: "0",
     notes: "",
   });
 
-  const [items, setItems] = useState<InvoiceItem[]>([
-    { description: "", quantity: 1, rate: 0, amount: 0 },
-  ]);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
 
-  // Calculate due date based on payment terms
-  useEffect(() => {
-    if (formData.invoiceDate && user?.defaultPaymentTerms) {
-      const invoiceDate = new Date(formData.invoiceDate);
-      const dueDate = new Date(invoiceDate);
-      dueDate.setDate(dueDate.getDate() + user.defaultPaymentTerms);
-      setFormData((prev) => ({
-        ...prev,
-        dueDate: dueDate.toISOString().split("T")[0],
-      }));
-    }
-  }, [formData.invoiceDate, user?.defaultPaymentTerms]);
-
-  const { data: clients, isLoading: clientsLoading } = useQuery({
-    queryKey: ["/api/clients"],
+  const {
+    data: invoice,
+    isLoading: invoiceLoading,
+    error: invoiceError,
+  } = useQuery<InvoiceWithDetails, Error>({
+    queryKey: ["/api/invoices", invoiceId],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch("/api/clients", { headers });
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      return response.json();
+      const res = await fetch(`/api/invoices/${invoiceId}`, { headers });
+      if (!res.ok) throw new Error("Failed to fetch invoice");
+      return res.json();
     },
   });
 
-  const createInvoiceMutation = useMutation({
+  useEffect(() => {
+    if (invoice) {
+      setFormData({
+        clientId: invoice.clientId,
+        currency: invoice.currency,
+        invoiceDate: invoice.invoiceDate.toString().slice(0, 10),
+        dueDate: invoice.dueDate.toString().split("T")[0],
+        taxRate: invoice.taxRate,
+        notes: invoice.notes ?? "",
+      });
+
+      setItems(
+        invoice.items.map((item) => ({
+          id: item.id,
+          invoiceId: item.invoiceId,
+          createdAt: item.createdAt,
+          description: item.description,
+          quantity: parseFloat(item.quantity),
+          rate: parseFloat(item.rate),
+          amount: parseFloat(item.amount),
+        }))
+      );
+    }
+  }, [invoice]);
+
+  const { data: clients, isLoading: clientsLoading } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+    queryFn: async () => {
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/clients", { headers });
+      if (!res.ok) throw new Error("Failed to fetch clients");
+      return res.json();
+    },
+  });
+
+  const updateInvoiceMutation = useMutation({
     mutationFn: async (invoiceData: any) => {
-      return apiRequest("POST", "/api/invoices", invoiceData);
+      return apiRequest("PUT", `/api/invoices/${invoiceId}`, invoiceData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
-      toast({
-        title: "Success",
-        description: "Invoice created successfully.",
-      });
+      toast({ title: "Success", description: "Invoice updated successfully." });
       setLocation("/invoices");
     },
     onError: (error: any) => {
@@ -88,11 +116,6 @@ export default function CreateInvoice() {
     },
   });
 
-  const generateInvoiceNumber = () => {
-    const timestamp = Date.now().toString().slice(-6);
-    return `INV-${timestamp}`;
-  };
-
   const calculateItemAmount = (quantity: number, rate: number) => {
     return quantity * rate;
   };
@@ -102,21 +125,47 @@ export default function CreateInvoice() {
     field: keyof InvoiceItem,
     value: string | number
   ) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
+    const newItems = items.map((item, i) => {
+      if (i !== index) return item;
 
-    if (field === "quantity" || field === "rate") {
-      newItems[index].amount = calculateItemAmount(
-        newItems[index].quantity,
-        newItems[index].rate
-      );
-    }
+      const updatedItem = {
+        ...item,
+        [field]: value,
+      };
+
+      if (field === "quantity" || field === "rate") {
+        const quantity = field === "quantity" ? Number(value) : item.quantity;
+        const rate = field === "rate" ? Number(value) : item.rate;
+        return {
+          ...updatedItem,
+          amount: calculateItemAmount(quantity, rate),
+        };
+      }
+
+      return updatedItem;
+    });
 
     setItems(newItems);
   };
 
+  if (!invoiceId) {
+    toast({ title: "Error", description: "Missing invoice ID." });
+    return;
+  }
+
   const addItem = () => {
-    setItems([...items, { description: "", quantity: 1, rate: 0, amount: 0 }]);
+    setItems([
+      ...items,
+      {
+        id: crypto.randomUUID(), // or some placeholder
+        description: "",
+        quantity: 1,
+        rate: 0,
+        amount: 0,
+        invoiceId: invoiceId,
+        createdAt: new Date(),
+      },
+    ]);
   };
 
   const removeItem = (index: number) => {
@@ -136,6 +185,20 @@ export default function CreateInvoice() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const invoiceDate = formData.invoiceDate
+      ? new Date(formData.invoiceDate)
+      : null;
+    const dueDate = formData.dueDate ? new Date(formData.dueDate) : null;
+
+    if (!invoiceDate || !dueDate) {
+      toast({
+        title: "Error",
+        description: "Invoice Date and Due Date are required.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!formData.clientId) {
       toast({
@@ -160,25 +223,33 @@ export default function CreateInvoice() {
     const invoiceData = {
       invoice: {
         ...formData,
-        userId: user?.id,
-        invoiceNumber: generateInvoiceNumber(),
+        invoiceDate,
+        dueDate,
         subtotal: subtotal.toFixed(2),
-        taxRate: formData.taxRate,
         taxAmount: taxAmount.toFixed(2),
         total: total.toFixed(2),
-        invoiceDate: formData.invoiceDate,
-        dueDate: formData.dueDate,
       },
       items: items.map((item) => ({
+        id: item.id,
+        invoiceId: item.invoiceId,
+        createdAt: item.createdAt,
         description: item.description,
         quantity: item.quantity.toFixed(2),
         rate: item.rate.toFixed(2),
         amount: item.amount.toFixed(2),
-      })),
+      })) as SharedInvoiceItem[],
     };
 
-    console.log("Sending invoice data:", invoiceData);
-    createInvoiceMutation.mutate(invoiceData);
+    if (!formData.invoiceDate || !formData.dueDate) {
+      toast({
+        title: "Error",
+        description: "Invoice Date and Due Date are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateInvoiceMutation.mutate(invoiceData);
   };
 
   const { subtotal, taxAmount, total } = calculateTotals();
@@ -192,6 +263,12 @@ export default function CreateInvoice() {
 
   return (
     <div className="p-8">
+      {invoiceError && (
+        <p className="text-red-600">
+          Failed to load invoice: {invoiceError.message}
+        </p>
+      )}
+
       <div className="mb-8">
         <div className="flex items-center space-x-4 mb-4">
           <Button
@@ -203,11 +280,9 @@ export default function CreateInvoice() {
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">
-              Create Invoice
-            </h1>
+            <h1 className="text-3xl font-bold text-slate-900">Edit Invoice</h1>
             <p className="text-slate-600 mt-2">
-              Fill in the details to create a new invoice
+              Update invoice details and items
             </p>
           </div>
         </div>
@@ -215,23 +290,12 @@ export default function CreateInvoice() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Invoice Details */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Invoice Details */}
             <Card>
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                  Invoice Details
-                </h3>
+                <h3 className="text-lg font-semibold mb-4">Invoice Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="invoiceNumber">Invoice Number</Label>
-                    <Input
-                      id="invoiceNumber"
-                      value={generateInvoiceNumber()}
-                      className="bg-slate-50"
-                      readOnly
-                    />
-                  </div>
                   <div>
                     <Label htmlFor="currency">Currency</Label>
                     <Select
@@ -288,55 +352,38 @@ export default function CreateInvoice() {
             {/* Client Selection */}
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    Client Information
-                  </h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setLocation("/clients")}
-                  >
-                    + Add New Client
-                  </Button>
-                </div>
-                <div>
-                  <Label htmlFor="client">Select Client</Label>
-                  <Select
-                    value={formData.clientId}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, clientId: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a client..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clientsLoading ? (
-                        <SelectItem value="loading" disabled>
-                          Loading clients...
+                <Label htmlFor="client">Select Client</Label>
+                <Select
+                  value={formData.clientId}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, clientId: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a client..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clientsLoading ? (
+                      <SelectItem value="loading" disabled>
+                        Loading clients...
+                      </SelectItem>
+                    ) : (
+                      clients?.map((client: any) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
                         </SelectItem>
-                      ) : (
-                        clients?.map((client: any) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </CardContent>
             </Card>
 
             {/* Invoice Items */}
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    Invoice Items
-                  </h3>
+                <div className="flex justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Invoice Items</h3>
                   <Button type="button" onClick={addItem} size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Item
@@ -347,12 +394,11 @@ export default function CreateInvoice() {
                   {items.map((item, index) => (
                     <div
                       key={index}
-                      className="grid grid-cols-12 gap-4 p-4 bg-slate-50 rounded-lg"
+                      className="grid grid-cols-12 gap-4 bg-slate-50 p-4 rounded-lg"
                     >
                       <div className="col-span-5">
                         <Label>Description</Label>
                         <Input
-                          placeholder="Item description"
                           value={item.description}
                           onChange={(e) =>
                             updateItem(index, "description", e.target.value)
@@ -364,8 +410,6 @@ export default function CreateInvoice() {
                         <Label>Quantity</Label>
                         <Input
                           type="number"
-                          min="0"
-                          step="0.01"
                           value={item.quantity}
                           onChange={(e) =>
                             updateItem(
@@ -381,8 +425,6 @@ export default function CreateInvoice() {
                         <Label>Rate</Label>
                         <Input
                           type="number"
-                          min="0"
-                          step="0.01"
                           value={item.rate}
                           onChange={(e) =>
                             updateItem(
@@ -398,8 +440,8 @@ export default function CreateInvoice() {
                         <Label>Amount</Label>
                         <Input
                           value={formatCurrency(item.amount)}
-                          className="bg-slate-100"
                           readOnly
+                          className="bg-slate-100"
                         />
                       </div>
                       <div className="col-span-1 flex items-end">
@@ -408,8 +450,8 @@ export default function CreateInvoice() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeItem(index)}
+                          className="text-red-600"
                           disabled={items.length === 1}
-                          className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -423,11 +465,9 @@ export default function CreateInvoice() {
             {/* Notes */}
             <Card>
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                  Additional Notes
-                </h3>
+                <Label htmlFor="notes">Additional Notes</Label>
                 <Textarea
-                  placeholder="Add any additional notes or terms..."
+                  id="notes"
                   value={formData.notes}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, notes: e.target.value }))
@@ -442,9 +482,7 @@ export default function CreateInvoice() {
           <div className="space-y-6">
             <Card className="sticky top-8">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                  Invoice Summary
-                </h3>
+                <h3 className="text-lg font-semibold mb-4">Invoice Summary</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-slate-600">Subtotal</span>
@@ -457,9 +495,6 @@ export default function CreateInvoice() {
                       <span className="text-slate-600">Tax</span>
                       <Input
                         type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
                         value={formData.taxRate}
                         onChange={(e) =>
                           setFormData((prev) => ({
@@ -491,11 +526,11 @@ export default function CreateInvoice() {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={createInvoiceMutation.isPending}
+                    disabled={updateInvoiceMutation.isPending}
                   >
-                    {createInvoiceMutation.isPending
-                      ? "Creating..."
-                      : "Create Invoice"}
+                    {updateInvoiceMutation.isPending
+                      ? "Updating..."
+                      : "Update Invoice"}
                   </Button>
                   <Button
                     type="button"

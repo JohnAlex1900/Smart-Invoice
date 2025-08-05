@@ -1,10 +1,10 @@
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  User as FirebaseUser
+  User as FirebaseUser,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -13,7 +13,7 @@ export const signIn = async (email: string, password: string) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
     return result.user;
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error("Account Not Found, Please Create an Account");
   }
 };
 
@@ -22,7 +22,7 @@ export const signUp = async (email: string, password: string) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     return result.user;
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error("Account already exists, login or use another email");
   }
 };
 
@@ -34,6 +34,15 @@ export const logOut = async () => {
   }
 };
 
+// Get Firebase ID token from the currently signed-in user
+export const getIdToken = async (): Promise<string | null> => {
+  const user = auth.currentUser;
+  if (user) {
+    return await user.getIdToken();
+  }
+  return null;
+};
+
 export const resetPassword = async (email: string) => {
   try {
     await sendPasswordResetEmail(auth, email);
@@ -42,6 +51,8 @@ export const resetPassword = async (email: string) => {
   }
 };
 
-export const onAuthStateChange = (callback: (user: FirebaseUser | null) => void) => {
+export const onAuthStateChange = (
+  callback: (user: FirebaseUser | null) => void
+) => {
   return onAuthStateChanged(auth, callback);
 };

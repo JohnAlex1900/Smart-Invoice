@@ -1,6 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { auth } from "./firebase";
 
+// Throw error if response is not OK
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -8,24 +9,33 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-function getAuthHeaders(): Record<string, string> {
+// 🔐 Get Firebase ID token and return Authorization header
+async function getAuthHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {};
-  if (auth.currentUser) {
-    headers['x-firebase-uid'] = auth.currentUser.uid;
+
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const token = await currentUser.getIdToken();
+    headers["Authorization"] = `Bearer ${token}`;
   }
+
   return headers;
 }
 
+// 🔁 Generic API request with optional body
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown | undefined,
+  data?: unknown
 ): Promise<Response> {
-  const authHeaders = getAuthHeaders();
-  const headers: Record<string, string> = {
-    ...authHeaders,
-  };
-  
+  const headers: Record<string, string> = {};
+
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const token = await currentUser.getIdToken();
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   if (data) {
     headers["Content-Type"] = "application/json";
   }
@@ -41,20 +51,22 @@ export async function apiRequest(
   return res;
 }
 
+// 🔁 Query function wrapper for React Query
 type UnauthorizedBehavior = "returnNull" | "throw";
+
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
+  ({ on401 }) =>
   async ({ queryKey }) => {
-    const authHeaders = getAuthHeaders();
-    
+    const headers = await getAuthHeaders();
+
     const res = await fetch(queryKey.join("/") as string, {
-      headers: authHeaders,
+      headers,
       credentials: "include",
     });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+    if (on401 === "returnNull" && res.status === 401) {
       return null;
     }
 
@@ -62,6 +74,7 @@ export const getQueryFn: <T>(options: {
     return await res.json();
   };
 
+// 🔁 React Query client
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

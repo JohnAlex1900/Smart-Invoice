@@ -13,8 +13,14 @@ import Clients from "@/pages/clients";
 import Settings from "@/pages/settings";
 import Sidebar from "@/components/layout/sidebar";
 import NotFound from "@/pages/not-found";
+import InvoiceDetails from "@/pages/invoice-details";
+import EditInvoice from "@/pages/edit-invoice";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+function ProtectedRoute({
+  component: Component,
+}: {
+  component: React.ComponentType;
+}) {
   const { firebaseUser, user, loading } = useAuth();
 
   if (loading) {
@@ -39,7 +45,11 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   );
 }
 
-function PublicRoute({ component: Component }: { component: React.ComponentType }) {
+function PublicRoute({
+  component: Component,
+}: {
+  component: React.ComponentType;
+}) {
   const { firebaseUser, user, loading } = useAuth();
 
   if (loading) {
@@ -60,15 +70,52 @@ function PublicRoute({ component: Component }: { component: React.ComponentType 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <PublicRoute component={LandingPage} />} />
-      <Route path="/auth" component={() => <PublicRoute component={AuthPage} />} />
-      <Route path="/login" component={() => <PublicRoute component={AuthPage} />} />
-      <Route path="/register" component={() => <PublicRoute component={AuthPage} />} />
-      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
-      <Route path="/invoices" component={() => <ProtectedRoute component={Invoices} />} />
-      <Route path="/invoices/create" component={() => <ProtectedRoute component={CreateInvoice} />} />
-      <Route path="/clients" component={() => <ProtectedRoute component={Clients} />} />
-      <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
+      <Route
+        path="/"
+        component={() => <PublicRoute component={LandingPage} />}
+      />
+      <Route
+        path="/auth"
+        component={() => <PublicRoute component={AuthPage} />}
+      />
+      <Route
+        path="/login"
+        component={() => <PublicRoute component={AuthPage} />}
+      />
+      <Route
+        path="/register"
+        component={() => <PublicRoute component={AuthPage} />}
+      />
+      <Route
+        path="/dashboard"
+        component={() => <ProtectedRoute component={Dashboard} />}
+      />
+      <Route
+        path="/invoices"
+        component={() => <ProtectedRoute component={Invoices} />}
+      />
+      <Route
+        path="/invoices/create"
+        component={() => <ProtectedRoute component={CreateInvoice} />}
+      />
+      <Route
+        path="/invoices/:invoiceId"
+        component={() => <ProtectedRoute component={InvoiceDetails} />}
+      />
+
+      <Route
+        path="/invoices/:invoiceId/edit"
+        component={() => <ProtectedRoute component={EditInvoice} />}
+      />
+
+      <Route
+        path="/clients"
+        component={() => <ProtectedRoute component={Clients} />}
+      />
+      <Route
+        path="/settings"
+        component={() => <ProtectedRoute component={Settings} />}
+      />
       <Route component={NotFound} />
     </Switch>
   );

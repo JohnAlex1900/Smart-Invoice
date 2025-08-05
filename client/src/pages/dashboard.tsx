@@ -3,15 +3,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { 
-  FileText, 
-  Clock, 
-  Users, 
-  DollarSign, 
-  PlusCircle, 
-  UserPlus, 
+import {
+  FileText,
+  Clock,
+  Users,
+  DollarSign,
+  PlusCircle,
+  UserPlus,
   BarChart,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -21,9 +21,8 @@ export default function Dashboard() {
   const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ["/api/dashboard/metrics"],
     queryFn: async () => {
-      const response = await fetch("/api/dashboard/metrics", {
-        headers: getAuthHeaders(),
-      });
+      const headers = await getAuthHeaders();
+      const response = await fetch("/api/dashboard/metrics", { headers });
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
@@ -32,8 +31,9 @@ export default function Dashboard() {
   const { data: recentInvoices, isLoading: invoicesLoading } = useQuery({
     queryKey: ["/api/dashboard/recent-invoices"],
     queryFn: async () => {
+      const headers = await getAuthHeaders();
       const response = await fetch("/api/dashboard/recent-invoices?limit=5", {
-        headers: getAuthHeaders(),
+        headers,
       });
       if (!response.ok) throw new Error("Failed to fetch recent invoices");
       return response.json();
@@ -84,11 +84,34 @@ export default function Dashboard() {
     );
   }
 
+  const invoiceChange = metrics?.prevMonthInvoices
+    ? (
+        ((metrics.totalInvoices - metrics.prevMonthInvoices) /
+          metrics.prevMonthInvoices) *
+        100
+      ).toFixed(1)
+    : "N/A";
+
+  const revenueChange = metrics?.prevMonthRevenue
+    ? (
+        ((parseFloat(metrics.totalRevenue) -
+          parseFloat(metrics.prevMonthRevenue)) /
+          parseFloat(metrics.prevMonthRevenue)) *
+        100
+      ).toFixed(1)
+    : "N/A";
+
+  const clientChange = metrics?.prevMonthClients
+    ? metrics.totalClients - metrics.prevMonthClients
+    : "N/A";
+
   return (
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-600 mt-2">Overview of your invoicing activity</p>
+        <p className="text-slate-600 mt-2">
+          Overview of your invoicing activity
+        </p>
       </div>
 
       {/* Metrics Cards */}
@@ -97,7 +120,9 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Total Invoices</p>
+                <p className="text-sm font-medium text-slate-600">
+                  Total Invoices
+                </p>
                 <p className="text-2xl font-bold text-slate-900 mt-2">
                   {metrics?.totalInvoices || 0}
                 </p>
@@ -107,8 +132,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center">
-              <span className="text-green-500 text-sm font-medium">+12%</span>
-              <span className="text-slate-500 text-sm ml-2">from last month</span>
+              <span className="text-green-500 text-sm font-medium">
+                {invoiceChange !== "N/A" ? `+${invoiceChange}%` : "N/A"}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -117,7 +143,9 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Pending Payments</p>
+                <p className="text-sm font-medium text-slate-600">
+                  Pending Payments
+                </p>
                 <p className="text-2xl font-bold text-slate-900 mt-2">
                   {formatCurrency(metrics?.pendingAmount || "0")}
                 </p>
@@ -128,9 +156,13 @@ export default function Dashboard() {
             </div>
             <div className="mt-4 flex items-center">
               <span className="text-yellow-500 text-sm font-medium">
-                {recentInvoices?.filter((inv: any) => inv.status === "pending").length || 0} invoices
+                {recentInvoices?.filter((inv: any) => inv.status === "pending")
+                  .length || 0}{" "}
+                invoices
               </span>
-              <span className="text-slate-500 text-sm ml-2">awaiting payment</span>
+              <span className="text-slate-500 text-sm ml-2">
+                awaiting payment
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -139,7 +171,9 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Total Clients</p>
+                <p className="text-sm font-medium text-slate-600">
+                  Total Clients
+                </p>
                 <p className="text-2xl font-bold text-slate-900 mt-2">
                   {metrics?.totalClients || 0}
                 </p>
@@ -149,8 +183,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center">
-              <span className="text-green-500 text-sm font-medium">+3</span>
-              <span className="text-slate-500 text-sm ml-2">new this month</span>
+              <span className="text-green-500 text-sm font-medium">
+                {clientChange !== "N/A" ? `+${clientChange}%` : "N/A"}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -169,8 +204,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center">
-              <span className="text-green-500 text-sm font-medium">+18%</span>
-              <span className="text-slate-500 text-sm ml-2">from last month</span>
+              <span className="text-green-500 text-sm font-medium">
+                {revenueChange !== "N/A" ? `+${revenueChange}%` : "N/A"}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -180,31 +216,49 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <div className="p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Recent Invoices</h3>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Recent Invoices
+            </h3>
           </div>
+
           <CardContent className="p-6">
             {!recentInvoices || recentInvoices.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                 <p className="text-slate-500">No invoices yet</p>
-                <Button onClick={() => setLocation("/invoices/create")} className="mt-4">
+                <Button
+                  onClick={() => setLocation("/invoices/create")}
+                  className="mt-4"
+                >
                   Create Your First Invoice
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
                 {recentInvoices.map((invoice: any) => (
-                  <div key={invoice.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div
+                    key={invoice.id}
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
+                  >
                     <div>
-                      <p className="font-medium text-slate-900">{invoice.invoiceNumber}</p>
-                      <p className="text-sm text-slate-600">{invoice.client.name}</p>
+                      <p className="font-medium text-slate-900">
+                        {invoice.invoiceNumber}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {invoice.client.name}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-slate-900">
                         {formatCurrency(invoice.total, invoice.currency)}
                       </p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                        {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                          invoice.status
+                        )}`}
+                      >
+                        {invoice.status.charAt(0).toUpperCase() +
+                          invoice.status.slice(1)}
                       </span>
                     </div>
                   </div>
@@ -216,7 +270,9 @@ export default function Dashboard() {
 
         <Card>
           <div className="p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Quick Actions
+            </h3>
           </div>
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -231,7 +287,7 @@ export default function Dashboard() {
                 </div>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              
+
               <Button
                 onClick={() => setLocation("/clients")}
                 className="w-full flex items-center justify-between p-4 h-auto"
@@ -243,7 +299,7 @@ export default function Dashboard() {
                 </div>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              
+
               <Button
                 onClick={() => setLocation("/invoices")}
                 className="w-full flex items-center justify-between p-4 h-auto"

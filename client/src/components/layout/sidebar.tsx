@@ -1,14 +1,14 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { logOut } from "@/lib/auth";
-import { 
-  Receipt, 
-  BarChart3, 
-  FileText, 
-  Users, 
-  Settings, 
-  User, 
-  LogOut 
+import {
+  Receipt,
+  BarChart3,
+  FileText,
+  Users,
+  Settings,
+  User,
+  LogOut,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -43,7 +43,7 @@ export default function Sidebar() {
             <Receipt className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">InvoicePro</h1>
+            <h1 className="text-xl font-bold text-slate-900">SmartInvoice</h1>
             <p className="text-sm text-slate-500">{user?.businessName}</p>
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function Sidebar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
-            
+
             return (
               <li key={item.path}>
                 <Link href={item.path}>
@@ -81,7 +81,9 @@ export default function Sidebar() {
             <User className="w-4 h-4 text-slate-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-900">{user?.contactPerson}</p>
+            <p className="text-sm font-medium text-slate-900">
+              {user?.contactPerson}
+            </p>
             <p className="text-xs text-slate-500">{user?.email}</p>
           </div>
           <button

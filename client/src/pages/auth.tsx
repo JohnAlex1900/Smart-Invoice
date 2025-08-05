@@ -56,29 +56,36 @@ export default function AuthPage() {
         }
 
         const firebaseUser = await signUp(formData.email, formData.password);
-        
-        // Create user in our database
+
+        // 🔐 Ensure ID token is available before creating user in backend
+        const idToken = await firebaseUser.getIdToken();
+
+        // Send user creation request with auth header
         await apiRequest("POST", "/api/users", {
           email: formData.email,
           businessName: formData.businessName,
           contactPerson: formData.contactPerson,
           firebaseUid: firebaseUser.uid,
+          defaultCurrency: "KES",
+          defaultTaxRate: "0",
+          defaultPaymentTerms: 30,
         });
 
         toast({
           title: "Account created successfully",
           description: "Welcome to InvoicePro!",
         });
-        
+
         setLocation("/");
       }
     } catch (error: any) {
       console.error("Authentication error:", error);
-      
+
       // Provide more helpful error messages
       let errorMessage = error.message;
       if (error.code === "auth/configuration-not-found") {
-        errorMessage = "Firebase authentication is not properly configured. Please check that Email/Password authentication is enabled in your Firebase console.";
+        errorMessage =
+          "Firebase authentication is not properly configured. Please check that Email/Password authentication is enabled in your Firebase console.";
       } else if (error.code === "auth/user-not-found") {
         errorMessage = "No account found with this email address.";
       } else if (error.code === "auth/wrong-password") {
@@ -102,7 +109,7 @@ export default function AuthPage() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -145,7 +152,9 @@ export default function AuthPage() {
                   id="password"
                   type="password"
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   placeholder="••••••••"
                   required
                 />
@@ -160,7 +169,9 @@ export default function AuthPage() {
                     id="confirmPassword"
                     type="password"
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
                     placeholder="••••••••"
                     required
                   />
@@ -171,7 +182,9 @@ export default function AuthPage() {
                     id="businessName"
                     type="text"
                     value={formData.businessName}
-                    onChange={(e) => handleInputChange("businessName", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("businessName", e.target.value)
+                    }
                     placeholder="Your Business Name"
                     required
                   />
@@ -182,7 +195,9 @@ export default function AuthPage() {
                     id="contactPerson"
                     type="text"
                     value={formData.contactPerson}
-                    onChange={(e) => handleInputChange("contactPerson", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("contactPerson", e.target.value)
+                    }
                     placeholder="Your Full Name"
                     required
                   />
@@ -191,7 +206,13 @@ export default function AuthPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Loading..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Send Reset Email"}
+              {loading
+                ? "Loading..."
+                : mode === "login"
+                ? "Sign In"
+                : mode === "register"
+                ? "Create Account"
+                : "Send Reset Email"}
             </Button>
           </form>
 

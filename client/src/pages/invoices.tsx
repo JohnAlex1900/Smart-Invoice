@@ -5,17 +5,24 @@ import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { 
-  Plus, 
-  Search, 
-  Eye, 
-  Edit, 
-  Download, 
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Download,
   Trash2,
-  FileText 
+  FileText,
+  Loader2,
 } from "lucide-react";
 
 export default function Invoices() {
@@ -25,17 +32,20 @@ export default function Invoices() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const [updatingInvoiceId, setUpdatingInvoiceId] = useState<string | null>(
+    null
+  );
+
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["/api/invoices", { status: statusFilter, search }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.append("status", statusFilter);
       if (search) params.append("search", search);
-      
-      const response = await fetch(`/api/invoices?${params}`, {
-        headers: getAuthHeaders(),
-      });
-      if (!response.ok) throw new Error("Failed to fetch invoices");
+
+      const headers = await getAuthHeaders();
+      const response = await fetch("/api/invoices", { headers });
+      if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
   });
@@ -61,8 +71,16 @@ export default function Invoices() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ invoiceId, status }: { invoiceId: string; status: string }) => {
-      return apiRequest("PATCH", `/api/invoices/${invoiceId}/status`, { status });
+    mutationFn: async ({
+      invoiceId,
+      status,
+    }: {
+      invoiceId: string;
+      status: string;
+    }) => {
+      return apiRequest("PATCH", `/api/invoices/${invoiceId}/status`, {
+        status,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
@@ -102,8 +120,29 @@ export default function Invoices() {
     }).format(num);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateInput: any) => {
+    if (!dateInput) return "N/A";
+
+    let date: Date;
+
+    // Firestore Timestamp
+    if (typeof dateInput.toDate === "function") {
+      date = dateInput.toDate();
+    }
+    // ISO string
+    else if (typeof dateInput === "string") {
+      date = new Date(dateInput);
+    }
+    // JS Date
+    else if (dateInput instanceof Date) {
+      date = dateInput;
+    }
+    // Unknown format
+    else {
+      return "Invalid Date";
+    }
+
+    return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -115,9 +154,17 @@ export default function Invoices() {
       deleteInvoiceMutation.mutate(invoiceId);
     }
   };
-
   const handleMarkAsPaid = (invoiceId: string) => {
-    updateStatusMutation.mutate({ invoiceId, status: "paid" });
+    setUpdatingInvoiceId(invoiceId); // track which invoice is being updated
+
+    updateStatusMutation.mutate(
+      { invoiceId, status: "paid" },
+      {
+        onSettled: () => {
+          setUpdatingInvoiceId(null); // clear state after success or error
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -181,10 +228,12 @@ export default function Invoices() {
           {!invoices || invoices.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 mb-2">No invoices found</h3>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">
+                No invoices found
+              </h3>
               <p className="text-slate-500 mb-6">
-                {search || statusFilter !== "all" 
-                  ? "Try adjusting your search or filters" 
+                {search || statusFilter !== "all"
+                  ? "Try adjusting your search or filters"
                   : "Get started by creating your first invoice"}
               </p>
               <Button onClick={() => setLocation("/invoices/create")}>
@@ -196,25 +245,48 @@ export default function Invoices() {
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="text-left py-4 px-6 font-medium text-slate-900">Invoice #</th>
-                  <th className="text-left py-4 px-6 font-medium text-slate-900">Client</th>
-                  <th className="text-left py-4 px-6 font-medium text-slate-900">Amount</th>
-                  <th className="text-left py-4 px-6 font-medium text-slate-900">Date</th>
-                  <th className="text-left py-4 px-6 font-medium text-slate-900">Due Date</th>
-                  <th className="text-left py-4 px-6 font-medium text-slate-900">Status</th>
-                  <th className="text-left py-4 px-6 font-medium text-slate-900">Actions</th>
+                  <th className="text-left py-4 px-6 font-medium text-slate-900">
+                    Invoice #
+                  </th>
+                  <th className="text-left py-4 px-6 font-medium text-slate-900">
+                    Client
+                  </th>
+                  <th className="text-left py-4 px-6 font-medium text-slate-900">
+                    Amount
+                  </th>
+                  <th className="text-left py-4 px-6 font-medium text-slate-900">
+                    Date
+                  </th>
+                  <th className="text-left py-4 px-6 font-medium text-slate-900">
+                    Due Date
+                  </th>
+                  <th className="text-left py-4 px-6 font-medium text-slate-900">
+                    Status
+                  </th>
+                  <th className="text-left py-4 px-6 font-medium text-slate-900">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {invoices.map((invoice: any) => (
-                  <tr key={invoice.id} className="hover:bg-slate-50 transition-colors">
+                  <tr
+                    key={invoice.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
                     <td className="py-4 px-6">
-                      <span className="font-medium text-slate-900">{invoice.invoiceNumber}</span>
+                      <span className="font-medium text-slate-900">
+                        {invoice.invoiceNumber}
+                      </span>
                     </td>
                     <td className="py-4 px-6">
                       <div>
-                        <p className="font-medium text-slate-900">{invoice.client.name}</p>
-                        <p className="text-sm text-slate-500">{invoice.client.email}</p>
+                        <p className="font-medium text-slate-900">
+                          {invoice.client?.name ?? "Unknown client"}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          {invoice.client?.email ?? "Unknown"}
+                        </p>
                       </div>
                     </td>
                     <td className="py-4 px-6">
@@ -223,22 +295,43 @@ export default function Invoices() {
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className="text-slate-600">{formatDate(invoice.invoiceDate)}</span>
+                      <span className="text-slate-600">
+                        {formatDate(invoice.invoiceDate)}
+                      </span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className="text-slate-600">{formatDate(invoice.dueDate)}</span>
+                      <span className="text-slate-600">
+                        {formatDate(invoice.dueDate)}
+                      </span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                        {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                          invoice.status
+                        )}`}
+                      >
+                        {invoice.status.charAt(0).toUpperCase() +
+                          invoice.status.slice(1)}
                       </span>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center space-x-2">
-                        <Button size="sm" variant="ghost" title="View">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="View"
+                          onClick={() => setLocation(`/invoices/${invoice.id}`)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" title="Edit">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Edit"
+                          onClick={() =>
+                            setLocation(`/invoices/${invoice.id}/edit`)
+                          }
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         {invoice.status === "pending" && (
@@ -246,12 +339,24 @@ export default function Invoices() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleMarkAsPaid(invoice.id)}
+                            disabled={
+                              updatingInvoiceId === invoice.id &&
+                              updateStatusMutation.isPending
+                            }
                             className="text-green-600 hover:text-green-700"
                             title="Mark as Paid"
                           >
-                            ✓
+                            {updatingInvoiceId === invoice.id &&
+                            updateStatusMutation.isPending ? (
+                              <span className="animate-spin mr-1">
+                                <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                              </span> // Or use a spinner icon
+                            ) : (
+                              "✓"
+                            )}
                           </Button>
                         )}
+
                         <Button size="sm" variant="ghost" title="Download PDF">
                           <Download className="w-4 h-4" />
                         </Button>

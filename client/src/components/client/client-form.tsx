@@ -8,10 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { insertClientSchema } from "@shared/schema";
 import { z } from "zod";
 
-const clientFormSchema = insertClientSchema.omit({ userId: true });
+const clientFormSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+});
 
 interface ClientFormProps {
   client?: any;
@@ -36,7 +40,7 @@ export default function ClientForm({ client, onSuccess }: ClientFormProps) {
     mutationFn: async (clientData: z.infer<typeof clientFormSchema>) => {
       const url = client ? `/api/clients/${client.id}` : "/api/clients";
       const method = client ? "PUT" : "POST";
-      
+
       return apiRequest(method, url, clientData);
     },
     onSuccess: () => {
@@ -44,7 +48,9 @@ export default function ClientForm({ client, onSuccess }: ClientFormProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
       toast({
         title: "Success",
-        description: client ? "Client updated successfully." : "Client created successfully.",
+        description: client
+          ? "Client updated successfully."
+          : "Client created successfully.",
       });
       onSuccess?.();
     },
@@ -71,7 +77,9 @@ export default function ClientForm({ client, onSuccess }: ClientFormProps) {
           placeholder="Acme Corporation"
         />
         {form.formState.errors.name && (
-          <p className="text-sm text-red-600 mt-1">{form.formState.errors.name.message}</p>
+          <p className="text-sm text-red-600 mt-1">
+            {form.formState.errors.name.message}
+          </p>
         )}
       </div>
 
@@ -84,7 +92,9 @@ export default function ClientForm({ client, onSuccess }: ClientFormProps) {
           placeholder="contact@acme.com"
         />
         {form.formState.errors.email && (
-          <p className="text-sm text-red-600 mt-1">{form.formState.errors.email.message}</p>
+          <p className="text-sm text-red-600 mt-1">
+            {form.formState.errors.email.message}
+          </p>
         )}
       </div>
 
@@ -97,7 +107,9 @@ export default function ClientForm({ client, onSuccess }: ClientFormProps) {
           placeholder="+1 (555) 123-4567"
         />
         {form.formState.errors.phone && (
-          <p className="text-sm text-red-600 mt-1">{form.formState.errors.phone.message}</p>
+          <p className="text-sm text-red-600 mt-1">
+            {form.formState.errors.phone.message}
+          </p>
         )}
       </div>
 
@@ -110,21 +122,19 @@ export default function ClientForm({ client, onSuccess }: ClientFormProps) {
           rows={3}
         />
         {form.formState.errors.address && (
-          <p className="text-sm text-red-600 mt-1">{form.formState.errors.address.message}</p>
+          <p className="text-sm text-red-600 mt-1">
+            {form.formState.errors.address.message}
+          </p>
         )}
       </div>
 
       <div className="flex justify-end space-x-3 pt-4">
-        <Button
-          type="submit"
-          disabled={createClientMutation.isPending}
-        >
-          {createClientMutation.isPending 
-            ? "Saving..." 
-            : client 
-            ? "Update Client" 
-            : "Create Client"
-          }
+        <Button type="submit" disabled={createClientMutation.isPending}>
+          {createClientMutation.isPending
+            ? "Saving..."
+            : client
+            ? "Update Client"
+            : "Create Client"}
         </Button>
       </div>
     </form>
