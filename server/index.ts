@@ -9,7 +9,8 @@ app.use(express.urlencoded({ extended: false }));
 
 const allowedOrigins = [
   "http://localhost:5000", // Local development
-  "https://smart-invoice-9e36.onrender.com", // Replace with your actual deployed frontend
+  "https://smart-invoice-9e36.onrender.com",
+  "https://smart-invoice-4rdv.vercel.app",
 ];
 
 app.use(
