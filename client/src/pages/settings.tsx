@@ -25,6 +25,8 @@ import {
   updatePassword,
 } from "firebase/auth";
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 const profileFormSchema = z.object({
   email: z.string().email("Invalid email"),
   businessName: z.string().min(1, "Business name is required"),
@@ -88,7 +90,7 @@ export default function Settings() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: z.infer<typeof profileFormSchema>) => {
-      return apiRequest("PUT", "/api/users/me", profileData);
+      return apiRequest("PUT", `${baseUrl}/api/users/me`, profileData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users/me"] });
@@ -155,9 +157,9 @@ export default function Settings() {
     try {
       setIsExporting(true);
       const [userDataRes, invoicesRes, clientsRes] = await Promise.all([
-        apiRequest("GET", "/api/users/me"),
-        apiRequest("GET", "/api/invoices"),
-        apiRequest("GET", "/api/clients"),
+        apiRequest("GET", `${baseUrl}/api/users/me`),
+        apiRequest("GET", `${baseUrl}/api/invoices`),
+        apiRequest("GET", `${baseUrl}/api/clients`),
       ]);
 
       const [userData, invoicesData, clientsData] = await Promise.all([

@@ -14,6 +14,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const { getAuthHeaders } = useAuth();
@@ -22,7 +24,9 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/metrics"],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch("/api/dashboard/metrics", { headers });
+      const response = await fetch(`${baseUrl}/api/dashboard/metrics`, {
+        headers,
+      });
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
@@ -32,9 +36,12 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/recent-invoices"],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch("/api/dashboard/recent-invoices?limit=5", {
-        headers,
-      });
+      const response = await fetch(
+        `${baseUrl}/api/dashboard/recent-invoices?limit=5`,
+        {
+          headers,
+        }
+      );
       if (!response.ok) throw new Error("Failed to fetch recent invoices");
       return response.json();
     },

@@ -11,6 +11,8 @@ interface AuthContextType {
   getAuthHeaders: () => Promise<Record<string, string>>;
 }
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -33,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         try {
           // Get or create user in our database
-          const response = await fetch("/api/users/me", {
+          const response = await fetch(`${baseUrl}/api/users/me`, {
             headers: {
               Authorization: `Bearer ${await firebaseUser.getIdToken()}`,
             },

@@ -32,6 +32,8 @@ interface Client {
   name: string;
 }
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 export default function EditInvoice() {
   const [, setLocation] = useLocation();
   const { invoiceId } = useParams();
@@ -57,7 +59,9 @@ export default function EditInvoice() {
     queryKey: ["/api/invoices", invoiceId],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const res = await fetch(`/api/invoices/${invoiceId}`, { headers });
+      const res = await fetch(`${baseUrl}/api/invoices/${invoiceId}`, {
+        headers,
+      });
       if (!res.ok) throw new Error("Failed to fetch invoice");
       return res.json();
     },
@@ -92,7 +96,7 @@ export default function EditInvoice() {
     queryKey: ["/api/clients"],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const res = await fetch("/api/clients", { headers });
+      const res = await fetch(`${baseUrl}/api/clients`, { headers });
       if (!res.ok) throw new Error("Failed to fetch clients");
       return res.json();
     },
@@ -100,7 +104,11 @@ export default function EditInvoice() {
 
   const updateInvoiceMutation = useMutation({
     mutationFn: async (invoiceData: any) => {
-      return apiRequest("PUT", `/api/invoices/${invoiceId}`, invoiceData);
+      return apiRequest(
+        "PUT",
+        `${baseUrl}/api/invoices/${invoiceId}`,
+        invoiceData
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });

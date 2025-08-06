@@ -25,6 +25,8 @@ import {
   Loader2,
 } from "lucide-react";
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 export default function Invoices() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -44,7 +46,7 @@ export default function Invoices() {
       if (search) params.append("search", search);
 
       const headers = await getAuthHeaders();
-      const response = await fetch("/api/invoices", { headers });
+      const response = await fetch(`${baseUrl}/api/invoices`, { headers });
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
@@ -52,7 +54,11 @@ export default function Invoices() {
 
   const deleteInvoiceMutation = useMutation({
     mutationFn: async (invoiceId: string) => {
-      return apiRequest("DELETE", `/api/invoices/${invoiceId}`, undefined);
+      return apiRequest(
+        "DELETE",
+        `${baseUrl}/api/invoices/${invoiceId}`,
+        undefined
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
@@ -78,9 +84,13 @@ export default function Invoices() {
       invoiceId: string;
       status: string;
     }) => {
-      return apiRequest("PATCH", `/api/invoices/${invoiceId}/status`, {
-        status,
-      });
+      return apiRequest(
+        "PATCH",
+        `${baseUrl}/api/invoices/${invoiceId}/status`,
+        {
+          status,
+        }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });

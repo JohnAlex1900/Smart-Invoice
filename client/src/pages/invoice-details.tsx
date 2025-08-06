@@ -10,6 +10,8 @@ import jsPDF from "jspdf";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 export default function InvoiceDetails() {
   const { invoiceId } = useParams<{ invoiceId: string }>();
   const [invoice, setInvoice] = useState<InvoiceWithDetails | null>(null);
@@ -17,7 +19,7 @@ export default function InvoiceDetails() {
   const pdfRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    apiRequest("GET", `/api/invoices/${invoiceId}`)
+    apiRequest("GET", `${baseUrl}/api/invoices/${invoiceId}`)
       .then((res) => res.json())
       .then((data: InvoiceWithDetails) => setInvoice(data))
       .finally(() => setLoading(false));

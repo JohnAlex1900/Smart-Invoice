@@ -10,6 +10,8 @@ import { signIn, signUp, resetPassword } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { Receipt } from "lucide-react";
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -61,7 +63,7 @@ export default function AuthPage() {
         const idToken = await firebaseUser.getIdToken();
 
         // Send user creation request with auth header
-        await apiRequest("POST", "/api/users", {
+        await apiRequest("POST", `${baseUrl}/api/users`, {
           email: formData.email,
           businessName: formData.businessName,
           contactPerson: formData.contactPerson,

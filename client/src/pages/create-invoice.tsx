@@ -25,6 +25,8 @@ interface InvoiceItem {
   amount: number;
 }
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 export default function CreateInvoice() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -60,7 +62,7 @@ export default function CreateInvoice() {
     queryKey: ["/api/clients"],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch("/api/clients", { headers });
+      const response = await fetch(`${baseUrl}/api/clients`, { headers });
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
@@ -68,7 +70,7 @@ export default function CreateInvoice() {
 
   const createInvoiceMutation = useMutation({
     mutationFn: async (invoiceData: any) => {
-      return apiRequest("POST", "/api/invoices", invoiceData);
+      return apiRequest("POST", `${baseUrl}/api/invoices`, invoiceData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });

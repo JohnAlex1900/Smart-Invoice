@@ -16,6 +16,8 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import ClientForm from "@/components/client/client-form";
 import { UserPlus, Search, Building, Edit, Trash2, Users } from "lucide-react";
 
+const baseUrl = "https://smart-invoice-9e36.onrender.com";
+
 export default function Clients() {
   const { toast } = useToast();
   const { getAuthHeaders } = useAuth();
@@ -27,7 +29,7 @@ export default function Clients() {
     queryKey: ["/api/clients"],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch("/api/clients", { headers });
+      const response = await fetch(`${baseUrl}/api/clients`, { headers });
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
@@ -35,7 +37,11 @@ export default function Clients() {
 
   const deleteClientMutation = useMutation({
     mutationFn: async (clientId: string) => {
-      return apiRequest("DELETE", `/api/clients/${clientId}`, undefined);
+      return apiRequest(
+        "DELETE",
+        `${baseUrl}/api/clients/${clientId}`,
+        undefined
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
