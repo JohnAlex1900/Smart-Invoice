@@ -1,10 +1,23 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+const allowedOrigins = [
+  "http://localhost:5000", // Local development
+  "https://smart-invoice-9e36.onrender.com", // Replace with your actual deployed frontend
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true, // Allow cookies and auth headers
+  })
+);
 
 app.use((req, res, next) => {
   const start = Date.now();
