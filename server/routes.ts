@@ -44,9 +44,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid token" });
       }
 
-      console.log("Decoded UID:", firebaseUid);
-      console.log("Looking up user in Firestore...");
-
       // 🔍 Lookup user in your app DB
       const user = await storage.getUserByFirebaseUid(firebaseUid);
       if (!user) {
